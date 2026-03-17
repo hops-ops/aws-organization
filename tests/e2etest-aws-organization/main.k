@@ -18,15 +18,15 @@ _base64_creds = base64.encode(_creds)
 
 # Organization - AWS only allows one org per account, so we adopt the existing one
 _test_org_name = "hops-e2etest-org"
-_existing_org_id = "o-3lholziq1o"
+_existing_org_id = file.read("env/ORG_ID").strip()
 
 # Test OU - persistent, imported via externalName
-_test_ou_external_name = "ou-hdvp-fbcb7sbw"
+_test_ou_external_name = file.read("env/TEST_OU_EXTERNAL_NAME").strip()
 
 # Test account - persistent, orphaned on delete
 _test_account_name = "configuration-aws-organization"
 _test_account_email = "configuration-aws-organization@ops.com.ai"
-_test_account_external_name = "544051101726"
+_test_account_external_name = file.read("env/TEST_ACCOUNT_EXTERNAL_NAME").strip()
 
 # =============================================================================
 # Dynamic test resources - timestamped to allow concurrent test runs
