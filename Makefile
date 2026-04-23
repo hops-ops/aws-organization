@@ -4,6 +4,7 @@ PACKAGE ?= aws-organization
 XRD_DIR := apis/organizations
 COMPOSITION := $(XRD_DIR)/composition.yaml
 DEFINITION := $(XRD_DIR)/definition.yaml
+CONFIGURATION := $(XRD_DIR)/configuration.yaml
 EXAMPLE_DEFAULT := examples/organizations/enterprise.yaml
 RENDER_TESTS := $(wildcard tests/test-*)
 E2E_TESTS := $(wildcard tests/e2etest-*)
@@ -28,9 +29,14 @@ clean:
 	rm -rf _output
 	rm -rf .up
 	rm -rf ~/.up/cache
+	rm -f $(CONFIGURATION)
 
 build:
 	up project build
+
+generate-configuration:
+	@set -euo pipefail; \
+	hops validate generate-configuration --path . --api-path "$(XRD_DIR)"
 
 # Render all examples (parallel execution, output shown per-job when complete)
 render\:all:
@@ -63,7 +69,7 @@ render\:all:
 	exit $$failed
 
 # Validate all examples (parallel execution, output shown per-job when complete)
-validate\:all:
+validate\:all: generate-configuration
 	@tmpdir=$$(mktemp -d); \
 	pids=""; \
 	for entry in $(EXAMPLES); do \
@@ -97,9 +103,9 @@ validate\:all:
 	exit $$failed
 
 # Shorthand aliases
-.PHONY: render validate
+.PHONY: render validate generate-configuration
 render: ; @$(MAKE) 'render:all'
-validate: ; @$(MAKE) 'validate:all'
+validate: ; @$(MAKE) generate-configuration 'validate:all'
 
 # Single example render (usage: make render:individual)
 render\:%:
@@ -113,7 +119,7 @@ render\:%:
 	fi
 
 # Single example validate (usage: make validate:individual)
-validate\:%:
+validate\:%: generate-configuration
 	@example="examples/organizations/$*.yaml"; \
 	if [ -f "$$example" ]; then \
 		echo "=== Validating $$example ==="; \
